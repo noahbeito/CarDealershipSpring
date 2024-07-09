@@ -1,4 +1,4 @@
-package com.example.CarDealershipSpring;
+package com.example.CarDealershipSpring.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
