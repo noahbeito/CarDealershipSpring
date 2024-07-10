@@ -25,6 +25,54 @@ public class VehicleRepository {
                 PreparedStatement ps = conn.prepareStatement(query);
                 ResultSet rs = ps.executeQuery()) {
 
+            return queryVehicles(vehicles, ps);
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return vehicles;
+    }
+
+    public List<Vehicle> getVehiclesByPrice(double minPrice, double maxPrice) {
+        String query = "SELECT * FROM vehicles WHERE price >= ? AND price <= ?";
+        List<Vehicle> vehicles = new ArrayList<>();
+
+        try (Connection conn = dataSource.getConnection();
+        PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setDouble(1, minPrice);
+            ps.setDouble(2, maxPrice);
+
+            return queryVehicles(vehicles, ps);
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return vehicles;
+    }
+
+
+
+    public List<Vehicle> getVehiclesByMakeModel(String make, String model) {
+        String query = "SELECT * FROM vehicles WHERE LOWER(make) = LOWER(?) AND LOWER(model) = LOWER(?)";
+        List<Vehicle> vehicles = new ArrayList<>();
+
+        try (Connection conn =  dataSource.getConnection();
+                PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setString(1, make);
+                    ps.setString(2, model);
+
+            return queryVehicles(vehicles, ps);
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return vehicles;
+    }
+
+    // Helpers
+    private List<Vehicle> queryVehicles(List<Vehicle> vehicles, PreparedStatement ps) throws SQLException {
+        try (ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 int vehicleId = rs.getInt("vehicle_id");
                 String vin = rs.getString("vin");
@@ -39,9 +87,6 @@ public class VehicleRepository {
                 Vehicle vehicle = new Vehicle(vehicleId, vin, sold, make, model, year, color, mileage, price);
                 vehicles.add(vehicle);
             }
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
         }
         return vehicles;
     }
