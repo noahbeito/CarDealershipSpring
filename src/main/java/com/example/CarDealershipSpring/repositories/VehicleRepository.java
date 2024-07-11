@@ -25,7 +25,7 @@ public class VehicleRepository {
                 PreparedStatement ps = conn.prepareStatement(query);
                 ResultSet rs = ps.executeQuery()) {
 
-            return queryVehicles(vehicles, ps);
+            vehicles = queryVehicles(ps);
         }
         catch (SQLException e) {
             e.printStackTrace();
@@ -42,7 +42,7 @@ public class VehicleRepository {
             ps.setDouble(1, minPrice);
             ps.setDouble(2, maxPrice);
 
-            return queryVehicles(vehicles, ps);
+            vehicles = queryVehicles( ps);
         }
         catch (SQLException e) {
             e.printStackTrace();
@@ -50,8 +50,6 @@ public class VehicleRepository {
 
         return vehicles;
     }
-
-
 
     public List<Vehicle> getVehiclesByMakeModel(String make, String model) {
         String query = "SELECT * FROM vehicles WHERE LOWER(make) = LOWER(?) AND LOWER(model) = LOWER(?)";
@@ -62,7 +60,97 @@ public class VehicleRepository {
                     ps.setString(1, make);
                     ps.setString(2, model);
 
-            return queryVehicles(vehicles, ps);
+            vehicles = queryVehicles(ps);
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return vehicles;
+    }
+
+    public List<Vehicle> getVehiclesByYear(int minYear, int maxYear) {
+        String query = "SELECT * FROM vehicles WHERE year >= ? AND year <= ?";
+        List<Vehicle> vehicles = new ArrayList<>();
+
+        try (Connection conn = dataSource.getConnection();
+        PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, minYear);
+            ps.setInt(2, maxYear);
+            vehicles = queryVehicles(ps);
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return vehicles;
+    }
+
+    public List<Vehicle> getVehiclesByColor(String color) {
+        String query = "SELECT * FROM vehicles WHERE LOWER(color) = LOWER(?)";
+        List<Vehicle> vehicles = new ArrayList<>();
+
+        try (Connection conn = dataSource.getConnection();
+        PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, color);
+            vehicles = queryVehicles(ps);
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return vehicles;
+    }
+
+    public List<Vehicle> getVehiclesByMileage(int minMileage, int maxMileage) {
+        String query = "SELECT * FROM vehicles WHERE mileage >= ? AND mileage <= ?";
+        List<Vehicle> vehicles = new ArrayList<>();
+
+        try (Connection conn = dataSource.getConnection();
+        PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, minMileage);
+            ps.setInt(2, maxMileage);
+            vehicles = queryVehicles(ps);
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return vehicles;
+    }
+
+    public List<Vehicle> addVehicle(String vin, String make, String model, int year, String color, int mileage,
+            double price) {
+        String query = "INSERT INTO vehicles (vin, make, model, year, color, mileage, price) VALUES (?, ?, ?, ?, ?, " +
+                "?, ?) RETURNING *";
+        List<Vehicle> vehicles = new ArrayList<>();
+
+        try (Connection conn = dataSource.getConnection();
+        PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, vin);
+            ps.setString(2, make);
+            ps.setString(3, model);
+            ps.setInt(4, year);
+            ps.setString(5, color);
+            ps.setInt(6, mileage);
+            ps.setDouble(7, price);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    vehicles = queryVehicles(ps);
+                }
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return vehicles;
+    }
+
+    public List<Vehicle> deleteVehicle(int id) {
+        String query = "DELETE FROM vehicles WHERE vehicle_id = ? RETURNING *";
+        List<Vehicle> vehicles = new ArrayList<>();
+
+        try (Connection conn = dataSource.getConnection();
+        PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, id);
+            vehicles = queryVehicles(ps);
         }
         catch (SQLException e) {
             e.printStackTrace();
@@ -71,7 +159,8 @@ public class VehicleRepository {
     }
 
     // Helpers
-    private List<Vehicle> queryVehicles(List<Vehicle> vehicles, PreparedStatement ps) throws SQLException {
+    private List<Vehicle> queryVehicles(PreparedStatement ps) throws SQLException {
+        List<Vehicle> vehicles = new ArrayList<>();
         try (ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 int vehicleId = rs.getInt("vehicle_id");
