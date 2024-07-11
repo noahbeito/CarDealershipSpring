@@ -17,4 +17,14 @@ public class Vehicle {
     private String color;
     private int mileage;
     private double price;
+
+    public Vehicle(String vin, String make, String model, int year, String color, int mileage, double price) {
+        this.vin = vin;
+        this.make = make;
+        this.model = model;
+        this.year = year;
+        this.color = color;
+        this.mileage = mileage;
+        this.price = price;
+    }
 }

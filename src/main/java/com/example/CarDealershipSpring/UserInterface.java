@@ -160,7 +160,9 @@ public class UserInterface {
         double price = scanner.nextDouble();
         scanner.nextLine();
 
-        List<Vehicle> vehicleList = vehicleRepository.addVehicle(vin, make, model, year, color, mileage, price);
+        Vehicle vehicle = new Vehicle(vin, make, model, year, color, mileage, price);
+
+        List<Vehicle> vehicleList = vehicleRepository.addVehicle(vehicle);
         System.out.println("Added vehicle");
         vehicleList.forEach(System.out::println);
     }

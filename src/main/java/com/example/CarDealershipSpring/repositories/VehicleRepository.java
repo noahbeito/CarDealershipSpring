@@ -115,25 +115,35 @@ public class VehicleRepository {
         return vehicles;
     }
 
-    public List<Vehicle> addVehicle(String vin, String make, String model, int year, String color, int mileage,
-            double price) {
+    public List<Vehicle> addVehicle(Vehicle vehicle) {
         String query = "INSERT INTO vehicles (vin, make, model, year, color, mileage, price) VALUES (?, ?, ?, ?, ?, " +
                 "?, ?) RETURNING *";
         List<Vehicle> vehicles = new ArrayList<>();
 
         try (Connection conn = dataSource.getConnection();
         PreparedStatement ps = conn.prepareStatement(query)) {
-            ps.setString(1, vin);
-            ps.setString(2, make);
-            ps.setString(3, model);
-            ps.setInt(4, year);
-            ps.setString(5, color);
-            ps.setInt(6, mileage);
-            ps.setDouble(7, price);
+            ps.setString(1, vehicle.getVin());
+            ps.setString(2, vehicle.getMake());
+            ps.setString(3, vehicle.getModel());
+            ps.setInt(4, vehicle.getYear());
+            ps.setString(5, vehicle.getColor());
+            ps.setInt(6, vehicle.getMileage());
+            ps.setDouble(7, vehicle.getPrice());
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    vehicles = queryVehicles(ps);
+                    int vehicleId = rs.getInt("vehicle_id");
+                    String vin = rs.getString("vin");
+                    boolean sold = rs.getBoolean("sold");
+                    String make = rs.getString("make");
+                    String model = rs.getString("model");
+                    int year = rs.getInt("year");
+                    String color = rs.getString("color");
+                    int mileage = rs.getInt("mileage");
+                    double price = rs.getDouble("price");
+
+                    Vehicle newVehicle = new Vehicle(vehicleId, vin, sold, make, model, year, color, mileage, price);
+                    vehicles.add(newVehicle);
                 }
             }
         }
